@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp管理系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn {
+            padding: 8px 16px;
+            background-color: #25D366;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        .stats {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WhatsApp链接管理</h1>
+        
+        <div class="stats">
+            <h3>系统统计</h3>
+            <p>总链接数：{{ links|length }}</p>
+            <p>总点击次数：{{ links|sum(attribute='click_count') }}</p>
+        </div>
+
+        <h2>创建新链接</h2>
+        <form action="{{ url_for('add_link') }}" method="post">
+            <div class="form-group">
+                <label>链接名称：</label>
+                <input type="text" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>WhatsApp号码（多个号码用逗号分隔）：</label>
+                <textarea name="numbers" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>有效期（天）：</label>
+                <input type="number" name="expire_days" value="30">
+            </div>
+            <button type="submit" class="btn">创建链接</button>
+        </form>
+
+        <h2>现有链接</h2>
+        <table>
+            <tr>
+                <th>名称</th>
+                <th>短链接</th>
+                <th>WhatsApp号码</th>
+                <th>点击次数</th>
+                <th>有效期至</th>
+                <th>操作</th>
+            </tr>
+            {% for link in links %}
+            <tr>
+                <td>{{ link.name }}</td>
+                <td>
+                    <a href="{{ request.host_url }}{{ link.short_code }}" target="_blank">
+                        {{ request.host_url }}{{ link.short_code }}
+                    </a>
+                </td>
+                <td>{{ link.numbers }}</td>
+                <td>{{ link.click_count }}</td>
+                <td>{{ link.expire_date.strftime('%Y-%m-%d') if link.expire_date else '永久' }}</td>
+                <td>
+                    <a href="{{ url_for('delete_link', id=link.id) }}" class="btn btn-delete" 
+                       onclick="return confirm('确定要删除这个链接吗？')">删除</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
